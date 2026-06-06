@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dodge Cube</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial,sans-serif;
+}
+
+body{
+    background:#111;
+    color:white;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+    overflow:hidden;
+}
+
+#game{
+    width:400px;
+    height:700px;
+    background:#1e1e1e;
+    border:3px solid white;
+    position:relative;
+    overflow:hidden;
+}
+
+#player{
+    width:50px;
+    height:50px;
+    background:cyan;
+    position:absolute;
+    bottom:20px;
+    left:175px;
+    border-radius:8px;
+}
+
+.enemy{
+    width:50px;
+    height:50px;
+    background:red;
+    position:absolute;
+    border-radius:8px;
+}
+
+#score{
+    position:absolute;
+    top:10px;
+    left:10px;
+    font-size:24px;
+    font-weight:bold;
+}
+
+#title{
+    position:absolute;
+    top:10px;
+    right:10px;
+    font-size:14px;
+    opacity:.7;
+}
+
+.controls{
+    position:fixed;
+    bottom:20px;
+    width:100%;
+    display:flex;
+    justify-content:center;
+    gap:20px;
+}
+
+.btn{
+    width:80px;
+    height:80px;
+    border:none;
+    border-radius:15px;
+    font-size:30px;
+    cursor:pointer;
+}
+
+@media(min-width:800px){
+    .controls{
+        display:none;
+    }
+}
+</style>
+</head>
+<body>
+
+<div id="game">
+    <div id="score">0</div>
+    <div id="title">Dodge Cube</div>
+    <div id="player"></div>
+</div>
+
+<div class="controls">
+    <button class="btn" id="left">⬅️</button>
+    <button class="btn" id="right">➡️</button>
+</div>
+
+<script>
+const game = document.getElementById("game");
+const player = document.getElementById("player");
+const scoreText = document.getElementById("score");
+
+let playerX = 175;
+let score = 0;
+let speed = 4;
+let gameRunning = true;
+
+function moveLeft(){
+    if(playerX > 0){
+        playerX -= 35;
+        player.style.left = playerX + "px";
+    }
+}
+
+function moveRight(){
+    if(playerX < game.clientWidth - 50){
+        playerX += 35;
+        player.style.left = playerX + "px";
+    }
+}
+
+document.addEventListener("keydown",(e)=>{
+    if(e.key==="ArrowLeft") moveLeft();
+    if(e.key==="ArrowRight") moveRight();
+});
+
+document.getElementById("left").onclick = moveLeft;
+document.getElementById("right").onclick = moveRight;
+
+function createEnemy(){
+    const enemy = document.createElement("div");
+    enemy.classList.add("enemy");
+
+    enemy.style.left =
+        Math.random()*(game.clientWidth-50)+"px";
+    enemy.style.top = "-60px";
+
+    game.appendChild(enemy);
+
+    let y = -60;
+
+    function fall(){
+        if(!gameRunning) return;
+
+        y += speed;
+        enemy.style.top = y + "px";
+
+        const eRect = enemy.getBoundingClientRect();
+        const pRect = player.getBoundingClientRect();
+
+        if(
+            eRect.left < pRect.right &&
+            eRect.right > pRect.left &&
+            eRect.top < pRect.bottom &&
+            eRect.bottom > pRect.top
+        ){
+            gameOver();
+            return;
+        }
+
+        if(y > game.clientHeight){
+            enemy.remove();
+            score++;
+            scoreText.textContent = score;
+
+            if(score % 10 === 0){
+                speed += 0.5;
+            }
+            return;
+        }
+
+        requestAnimationFrame(fall);
+    }
+
+    requestAnimationFrame(fall);
+}
+
+function gameOver(){
+    gameRunning = false;
+
+    setTimeout(()=>{
+        alert(
+            "GAME OVER\n\nSkor: " +
+            score
+        );
+        location.reload();
+    },100);
+}
+
+setInterval(()=>{
+    if(gameRunning){
+        createEnemy();
+    }
+},700);
+</script>
+
+</body>
+</html>
